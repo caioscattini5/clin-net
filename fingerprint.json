@@ -1,0 +1,11 @@
+{
+  "fingerprint": "servidor|f4:ee:08:fd:30:97|1CD53500",
+  "hw": {
+    "hostname": "servidor",
+    "macs": "f4:ee:08:fd:30:97",
+    "disk": "1CD53500",
+    "node": "v22.18.0",
+    "platform": "win32",
+    "createdAt": "2025-08-25T14:42:46.710Z"
+  }
+}

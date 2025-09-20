@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Clínica.NET — Upload Documento</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{ --blue:#a3d8f4; --green:#b8e6c1; --muted:#516d7a; --card:#fff }
+*{box-sizing:border-box}
+body{font-family:Inter,system-ui,Arial;background:#f3fbfd;margin:0;color:#06323a;padding:12px}
+.container{max-width:980px;margin:0 auto}
+.header{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}
+.brand{font-weight:700;color:#06495b}
+.card{background:var(--card);border-radius:12px;padding:12px;box-shadow:0 6px 18px rgba(6,73,91,0.06);margin-bottom:12px}
+.title{margin:0 0 8px 0;color:#06323a;font-size:16px}
+.row{display:grid;gap:10px}
+.row.cols-2{grid-template-columns:1fr 1fr}
+@media(max-width:720px){.row.cols-2{grid-template-columns:1fr}}
+label{font-size:14px;color:var(--muted);display:block;margin-bottom:6px}
+input[type="text"], input[type="number"]{width:100%;padding:10px;border-radius:10px;border:1px solid #e6f2f6;background:#f8fbfc}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:8px 12px;border-radius:999px;background:linear-gradient(180deg,#f0fbff,#ecfdf3);border:1px solid #dfeff6;font-size:14px;display:flex;align-items:center;gap:8px}
+.chip input{transform:scale(1.1)}
+.controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.btn{flex:1;padding:12px;border-radius:10px;border:0;background:linear-gradient(90deg,var(--blue),var(--green));color:#04323a;font-weight:700;cursor:pointer}
+.btn.ghost{background:#fff;border:1px solid #d9eef6}
+.stage{position:relative;border-radius:10px;border:2px dashed #2a6f97;background:#eaf7fb;overflow:hidden;touch-action:none}
+#displayCanvas{display:block;width:100%;height:100%}
+.sig-box {
+  position: absolute;
+  border: 2px dashed rgba(10,50,70,0.25);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #083244;
+  font-size: 13px;
+  pointer-events: none;
+  background: rgba(255,255,255,0.55);
+
+  width: 100%;      /* optional: stretch full width of stage */
+  max-width: 600px; /* keep nice size on big screens */
+  height: 180px;    /* increased from ~120px */
+}
+
+#sigPad {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;   /* fill .sig-box */
+  height: 100%;  /* taller now */
+  pointer-events: none; /* enabled only when signing */
+}
+
+img.preview{max-width:100%;border-radius:8px;border:1px solid #dbeff6}
+.hint{font-size:13px;color:var(--muted)}
+.hidden{display:none!important}
+.footer{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="container">
+
+  <div class="header">
+    <div class="brand">Clínica.NET — Ingestão de Dados de Cliente</div>
+    <a href="./index.html" class="hint">← Voltar</a>
+  </div>
+
+  <!-- STEP 1: metadata -->
+  <div id="step1" class="card">
+    <h3 class="title">1) Dados & Termos</h3>
+    <div class="row cols-2">
+      <div>
+        <label for="customerId">ID do Cliente</label>
+        <input id="customerId" type="text" inputmode="numeric" placeholder="1 a 8 dígitos" maxlength="8" />
+      </div>
+    </div>
+
+    <div style="height:8px"></div>
+    <label>Termos (marque um ou mais)</label>
+    <div class="chips" id="termsBox"></div>
+
+    <div style="height:8px"></div>
+    <label>Outro termo (opcional)</label>
+    <input id="termOther" type="text" placeholder="Digite outro termo">
+
+    <div style="height:12px"></div>
+    <div class="controls">
+      <button id="toStep2" class="btn">Continuar →</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: select & align -->
+  <div id="step2" class="card hidden">
+    <h3 class="title">2) Selecionar Documento e Alinhar</h3>
+    <label>Escolher arquivo (JPG/PNG ou PDF)</label>
+    <input id="docInput" type="file" accept="image/*,.pdf">
+
+    <div style="height:12px"></div>
+    <div class="controls">
+      <button id="zoomOut" class="btn ghost">–</button>
+      <button id="zoomIn" class="btn ghost">+</button>
+      <button id="resetView" class="btn ghost">Reset</button>
+    </div>
+
+    <div style="height:12px"></div>
+    <div id="stage" class="stage" style="min-height:360px">
+    <canvas id="displayCanvas"></canvas>
+  
+    <!-- Signature box -->
+    <div id="sigBox" class="sig-box">
+    <canvas id="sigPad" width="600" height="180"></canvas>
+     </div>
+   </div>
+
+    <!-- Add this inside upload-doc.html near your signature controls (same styling group as zoom/reset) -->
+    <div class="sig-thickness-controls" style="display:flex;gap:8px;align-items:center;margin-top:8px;">
+      <label style="font-size:0.9rem;color:#cfe8ff">Pen:</label>
+      <button id="penThin" class="btn small">1</button>
+      <button id="penMed" class="btn small">2</button>
+      <button id="penThick" class="btn small">3</button>
+    </div>
+
+
+    <div style="height:8px"></div>
+    <div class="hint">Arraste para mover, use zoom para ajustar. Coloque a área de assinatura dentro da caixa tracejada.</div>
+
+    <div style="height:12px"></div>
+    <div class="controls">
+      <button id="lockAndSign" class="btn">Confirmar posição e assinar</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: preview & save -->
+  <div id="step3" class="card hidden">
+    <h3 class="title">3) Pré-visualizar e Salvar</h3>
+    <img id="previewImg" class="preview" alt="Pré-visualização" />
+    <div style="height:12px"></div>
+    <div class="controls">
+      <button id="backToSign" class="btn ghost">Voltar para Assinar</button>
+      <button id="saveBtn" class="btn">Salvar Documento</button>
+    </div>
+    <div id="saveMessage" class="hint" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="footer">
+    <div class="hint">Nome do arquivo: termos + timestamp (JPG)</div>
+    <div id="status" class="hint"></div>
+  </div>
+
+</div>
+
+<script src="signature.js"></script>
+<script src="upload-doc.js"></script>
+</body>
+</html>

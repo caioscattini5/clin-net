@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "body-parser": "^2.2.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "pdf-poppler": "^0.2.1",
+    "sharp": "^0.34.3"
+  }
+}
