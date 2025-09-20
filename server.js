@@ -14,7 +14,7 @@ const execFileAsync = promisify(execFile);
 
 
 const ROOT = __dirname;
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 // === License verification (strict, no bypass) ===
 const crypto = require('crypto');
